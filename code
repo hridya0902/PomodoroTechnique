@@ -1,0 +1,97 @@
+const minutes = document.querySelector('.minutes');
+const seconds = document.querySelector('.seconds');
+const btnStart = document.querySelector('.btn-start');
+const btnStop = document.querySelector('.btn-stop');
+const btnReset = document.querySelector('.btn-reset');
+const btnRest = document.querySelector('.btn-rest');
+const rightMask = document.querySelector('.semi-circle.right-side.circle-mask');
+const leftMask = document.querySelector('.semi-circle.left-side.circle-mask');
+
+let timerInterval;
+let isRunning = false;
+let timeLeft;
+let totalTime;
+
+function updateTimer() {
+    const minutesValue = parseInt(minutes.textContent);
+    const secondsValue = parseInt(seconds.textContent);
+    timeLeft = minutesValue * 60 + secondsValue;
+    totalTime = timeLeft;
+}
+
+function startTimer() { 
+    if (isRunning) return;
+    
+    updateTimer();
+    if (timeLeft === 0) resetTimer();
+    
+    isRunning = true;
+    updateMessage('timer running');
+
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        
+        // Update display
+        const minutesLeft = Math.floor(timeLeft / 60);
+        const secondsLeft = timeLeft % 60;
+        
+        minutes.textContent = minutesLeft.toString().padStart(2, '0');
+        seconds.textContent = secondsLeft.toString().padStart(2, '0');
+
+        // Update circle animation
+        const progress = timeLeft / totalTime;
+        const degrees = progress * 360;
+
+        if (degrees <= 180) {
+            rightMask.style.transform = `rotate(${degrees}deg)`;
+            leftMask.style.transform = 'rotate(180deg)';
+        } else {
+            rightMask.style.transform = 'rotate(180deg)';
+            leftMask.style.transform = `rotate(${degrees}deg)`;
+        }
+
+        // Check if timer is complete
+        if (timeLeft === 0) {
+            clearInterval(timerInterval);
+            isRunning = false;
+            updateMessage('timer complete!');
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
+    isRunning = false;
+    updateMessage('timer stopped');
+}
+
+function resetTimer() {
+    clearInterval(timerInterval);
+    isRunning = false;
+    minutes.textContent = '25';
+    seconds.textContent = '00';
+    rightMask.style.transform = 'rotate(0deg)';
+    leftMask.style.transform = 'rotate(180deg)';
+    updateMessage('timer reset');
+}
+
+function startRest() {
+    clearInterval(timerInterval);
+    isRunning = false;
+    minutes.textContent = '05';
+    seconds.textContent = '00';
+    rightMask.style.transform = 'rotate(0deg)';
+    leftMask.style.transform = 'rotate(180deg)';
+    updateMessage('rest period - press start');
+}
+
+function updateMessage(text) {
+    const messageElement = document.querySelector('.app-message');
+    messageElement.textContent = text;
+}
+
+// Event Listeners
+btnStart.addEventListener('click', startTimer);
+btnStop.addEventListener('click', stopTimer);
+btnReset.addEventListener('click', resetTimer);
+btnRest.addEventListener('click', startRest);
